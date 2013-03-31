@@ -1,0 +1,86 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Threading;
+
+using System.Runtime.InteropServices;
+using System.ComponentModel;
+
+
+namespace performance_optimization
+{
+    class Program
+    {
+       [DllImport("shell32.dll")]
+static extern int SHQueryRecycleBinW(string pszRootPath, ref SHQUERYRBINFO
+   pSHQueryRBInfo);
+
+
+//[StructLayout(LayoutKind.Sequential, Pack=4)]
+[StructLayout(LayoutKind.Explicit, Size=20)]
+public struct SHQUERYRBINFO
+{
+    //public int  cbSize;
+    //public long i64Size;
+    //public long i64NumItems;
+    [FieldOffset(0)]  public int  cbSize ;
+    [FieldOffset(4)]  public long i64Size ;
+    [FieldOffset(12)] public long i64NumItems ;
+}
+
+public static int GetCount()
+{
+    SHQUERYRBINFO sqrbi = new SHQUERYRBINFO();
+    sqrbi.cbSize = Marshal.SizeOf(typeof(SHQUERYRBINFO));
+    int hresult = SHQueryRecycleBinW(string.Empty, ref sqrbi);
+    ///getGetLastWin32Error 
+    int errorOfFunc = Convert.ToInt32(
+  System.Runtime.InteropServices.Marshal.GetLastWin32Error());
+    return (int)sqrbi.i64NumItems;
+
+    //return errorOfFunc;
+}
+        static void Main(string[] args)
+        {
+            Console.WriteLine(
+                System.IO.Path.GetPathRoot(
+                Environment.GetFolderPath(Environment.SpecialFolder.System))
+                );
+            performanceOptimization _perfOpts = new performanceOptimization();
+
+            //uint binClearStatus;
+            //ulong annan;
+
+            //annan = _perfOpts.shellEmptyRecycleBin(out binClearStatus, @"C:\");
+            //Console.WriteLine(binClearStatus);
+            //Console.WriteLine(annan);
+
+            //Console.WriteLine("Size of int: {0}", sizeof(int));
+            //Console.WriteLine("Size of int: {0}", sizeof(long));
+            //Console.WriteLine("Size of int: {0}", sizeof(uint));
+            //Console.WriteLine("Size of int: {0}", sizeof(ulong));
+
+
+            uint binQueryStatus;
+            long binSize;
+            long binTotalMembers;
+            string pszRootPath = "C:\\";
+
+            ulong ana = _perfOpts.QueryRecycleBin(out binQueryStatus,
+                out binSize, out binTotalMembers, pszRootPath);
+            Console.WriteLine("binQueryStatus");
+            Console.WriteLine("binQueryStatus " + binQueryStatus);
+            Console.WriteLine("binSize " + binSize);
+            Console.WriteLine("binTotalMembers " + binTotalMembers);
+            Console.WriteLine(ana);
+
+
+
+            Console.WriteLine(GetCount());
+
+            
+
+            Console.ReadLine();
+        }
+    }
+}
