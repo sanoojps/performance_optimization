@@ -4,7 +4,7 @@ using System.Text;
 
 using Microsoft.Win32;
 
-namespace registryOperations
+namespace performance_optimization
 {
     /// <summary>
     /// 

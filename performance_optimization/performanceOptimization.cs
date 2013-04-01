@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Threading;
 
 using System.Runtime.InteropServices;
 
@@ -9,10 +8,179 @@ namespace performance_optimization
 {
     class performanceOptimization
     {
-        public performanceOptimization()
-        { }
 
+        #region SHQueryRecycleBin
+
+        /*
+         * SHQueryRecycleBin function
+         * [url]
+         * [http://msdn.microsoft.com/en-us/library/windows/desktop/bb762241(v=vs.85).aspx]
+         * 
+         * Retrieves the size of the Recycle Bin and the number of items in it, 
+         * for a specified drive.
+         * 
+         * HRESULT SHQueryRecycleBin(
+    _In_opt_  LPCTSTR pszRootPath,
+         * The address of a null-terminated string of maximum length MAX_PATH 
+         * to contain the path of the root drive on which the Recycle Bin is located.
+         * This parameter can contain the address of a string formatted with the drive, folder, and subfolder names (C:\Windows\System...).
+    _Inout_   LPSHQUERYRBINFO pSHQueryRBInfo
+         * The address of a SHQUERYRBINFO structure that receives 
+         * the Recycle Bin information. 
+         * The cbSize member of the structure must be set to the size of the structure 
+         * before calling this API.
+);
+         
+         * SHQUERYRBINFO structure
+         * [url]
+         * [http://msdn.microsoft.com/en-us/library/windows/desktop/bb759803(v=vs.85).aspx]
+         * 
+         * Contains the size and item count information retrieved by the 
+         * SHQueryRecycleBin function.
+         * 
+         * typedef struct {
+  DWORD   cbSize;
+         * The size of the structure, in bytes. 
+         * This member must be filled in prior to calling the function.
+  __int64 i64Size;
+         * The total size of all the objects in the specified Recycle Bin, in bytes. 
+  __int64 i64NumItems;
+         * The total number of items in the specified Recycle Bin.
+} SHQUERYRBINFO, *LPSHQUERYRBINFO;
+         */
+
+
+        /// <summary>
+        /// SHQUERYRBINFO
+        /// </summary>
+        [System.Runtime.InteropServices.StructLayoutAttribute
+           (System.Runtime.InteropServices.LayoutKind.Sequential)]
+        public struct SHQUERYRBINFO
+        {
+
+            /// DWORD->unsigned int
+            public uint cbSize;
+
+            /// __int64
+            public long i64Size;
+
+            /// __int64
+            public long i64NumItems;
+        }
+
+
+        /// Return Type: HRESULT->LONG->int
+        ///pszRootPath: LPCWSTR->WCHAR*
+        ///pSHQueryRBInfo: LPSHQUERYRBINFO->_SHQUERYRBINFO*
+        [System.Runtime.InteropServices.DllImportAttribute(
+            "shell32.dll",
+            EntryPoint = "SHQueryRecycleBinW",
+            CallingConvention =
+            System.Runtime.InteropServices.CallingConvention.StdCall)]
+        public static extern int SHQueryRecycleBinW(
+            [System.Runtime.InteropServices.InAttribute()]
+            [System.Runtime.InteropServices.MarshalAsAttribute(
+                System.Runtime.InteropServices.UnmanagedType.LPWStr)] 
+            string pszRootPath,
+            ref SHQUERYRBINFO pSHQueryRBInfo);
+
+        /// <summary>
+        /// queryRecycleBin 
+        /// obtain number of items &
+        /// total size
+        /// 
+        /// Function - skeleton
+        /// -------------------
+        ///  public int queryRecycleBin(
+        ///  out int binQueryStatus,
+        ///  out long binSize,
+        ///  out long binTotalMembers,
+        ///  string pszRootPath = @"C:\"
+        ///  )
+        ///  
+        /// </summary>
+        /// <param name="binQueryStatus"></param>
+        /// <param name="binSize"></param>
+        /// <param name="binTotalMembers"></param>
+        /// <param name="pszRootPath"></param>
+        /// <returns>HRESULT_return_value</returns>
+        public int queryRecycleBin(
+            out int binQueryStatus,
+              out long binSize,
+              out long binTotalMembers,
+                string pszRootPath = @"C:\"
+            )
+        {
+            ///variable to asssign LastWin32Error
+            binQueryStatus = int.MinValue;
+
+            ///variable to assign RecycleBin Size 
+            binSize = long.MinValue;
+
+            ///variable to assign total number of bin members
+            binTotalMembers = long.MinValue;
+
+            ///SHQueryRecycleBin function return value
+            int HRESULT_return_value = int.MinValue;
+
+            ///filling in the SHQUERYRBINFO structure
+
+            SHQUERYRBINFO pSHQueryRBInfo = new SHQUERYRBINFO();
+            pSHQueryRBInfo.cbSize = (uint)
+                System.Runtime.InteropServices.Marshal.SizeOf(
+                typeof(SHQUERYRBINFO));
+            
+            ///check if drive exists
+            if (System.IO.Directory.Exists(pszRootPath))
+            {
+                int _HRESULT = SHQueryRecycleBinW(pszRootPath, ref pSHQueryRBInfo);
+                ///getGetLastWin32Error 
+                int errorOfFunc = Convert.ToInt32(
+              System.Runtime.InteropServices.Marshal.GetLastWin32Error());
+
+                binQueryStatus = errorOfFunc;
+
+                HRESULT_return_value = _HRESULT;
+
+                ///assign RecycleBin Size
+                binSize = pSHQueryRBInfo.i64Size;
+
+                ///assign total number of bin members
+                binTotalMembers = pSHQueryRBInfo.i64NumItems;
+
+                System.Diagnostics.Debug.WriteLine("\n" + "pSHQueryRBInfo.cbSize: "
+                    + pSHQueryRBInfo.cbSize 
+                    );
+                System.Diagnostics.Debug.WriteLine("pSHQueryRBInfo.i64Size: "
+                    + pSHQueryRBInfo.i64Size
+                    );
+                System.Diagnostics.Debug.WriteLine("pSHQueryRBInfo.i64NumItems: "
+                    + pSHQueryRBInfo.i64NumItems 
+                    );
+                System.Diagnostics.Debug.WriteLine("a: "
+                   + _HRESULT 
+                   );
+                System.Diagnostics.Debug.WriteLine("errorOfFunc: "
+                  + errorOfFunc + "\n"
+                  );
+            }
+            else
+            {
+                System.Diagnostics.Debug.WriteLine(
+                    pszRootPath
+                    + "\n"
+                    + "Drive letter does not exit"
+                     + "\n"
+                    );
+            }
+
+            return HRESULT_return_value;
         
+        }
+
+        #endregion
+
+
         #region shellEmptyRecycleBin
 
         /*
@@ -65,7 +233,13 @@ namespace performance_optimization
          * SHEmptyRecycleBinW (Unicode) and 
          * SHEmptyRecycleBinA (ANSI)
          */
-
+        /// <summary>
+        /// SHEmptyRecycleBin
+        /// </summary>
+        /// <param name="hwnd"></param>
+        /// <param name="pszRootPath"></param>
+        /// <param name="dwFlags"></param>
+        /// <returns></returns>
         [DllImport("Shell32.dll", SetLastError = true, CharSet = CharSet.Auto)]
         public static extern ulong SHEmptyRecycleBin(
         [In] IntPtr hwnd,
@@ -74,10 +248,10 @@ namespace performance_optimization
         [In] uint dwFlags
             );
 
-          private const int SHERB_NOCONFIRMATION  =  0x00000001;
-          private const int SHERB_NOPROGRESSUI    =  0x00000002;
-          private const int SHERB_NOSOUND         =  0x00000004;
-          private const int NONE_OF_THE_ABOVE     =  0X00000000; //myown
+        private const int SHERB_NOCONFIRMATION = 0x00000001;
+        private const int SHERB_NOPROGRESSUI = 0x00000002;
+        private const int SHERB_NOSOUND = 0x00000004;
+        private const int NONE_OF_THE_ABOVE = 0X00000000; //myown
 
         /*
 //HRESULT return values
@@ -94,185 +268,61 @@ namespace performance_optimization
 //E_POINTER	            Pointer that is not valid	            0x80004003
 //E_UNEXPECTED	        Unexpected failure	                    0x8000FFFF
         */
-      
-       /// <summary>
-          /// shellEmptyRecycleBin
-          /// (
-          ///  out uint binClearStatus,string pszRootPath = @"C:\"
-          /// )
-       /// </summary>
-       /// <param name="binClearStatus">out</param>
-       /// <param name="pszRootPath">in</param>
-       /// <returns>
-          /// uint binClearStatus
-          /// LastWin32Error
-       /// </returns>
-          public ulong shellEmptyRecycleBin(
-              out uint binClearStatus,
-              string pszRootPath = @"C:\")
-          {
-              ///variable to asssign LastWin32Error
-              binClearStatus = 999999;
 
-              ///SHEmptyRecycleBin function return value
-              ulong _SHEmptyRecycleBin = ulong.MinValue;
-              
-              ///check if drive exists
-              if(System.IO.Directory.Exists(pszRootPath))
-              {
-                  ///empty recycle bin of the specified Drive
-                  ///no confirmation
-                  _SHEmptyRecycleBin = SHEmptyRecycleBin(
-                  IntPtr.Zero,
-                    pszRootPath,
-                  SHERB_NOCONFIRMATION
-                  );
-                  ///getGetLastWin32Error 
-                  int errorOfFunc = Convert.ToInt32(
-                System.Runtime.InteropServices.Marshal.GetLastWin32Error());
+        /// <summary>
+        /// shellEmptyRecycleBin
+        /// (
+        ///  out uint binClearStatus,string pszRootPath = @"C:\"
+        /// )
+        /// </summary>
+        /// <param name="binClearStatus">out</param>
+        /// <param name="pszRootPath">in</param>
+        /// <returns>
+        /// uint binClearStatus
+        /// LastWin32Error
+        /// </returns>
+        public ulong shellEmptyRecycleBin(
+            out uint binClearStatus,
+            string pszRootPath = @"C:\")
+        {
+            ///variable to asssign LastWin32Error
+            binClearStatus = 999999;
 
-              binClearStatus = (uint)errorOfFunc ;
-              
-              }
-              else
-              {
-              //binClearStatus = 1;
-              //_SHEmptyRecycleBin = 1;
-                  System.Diagnostics.Debug.WriteLine(
-                     pszRootPath
-                     + "\n"
-                     + "Drive letter does not exit"
-                      + "\n"
-                     );
-              }
+            ///SHEmptyRecycleBin function return value
+            ulong _SHEmptyRecycleBin = ulong.MinValue;
 
-              return _SHEmptyRecycleBin;
-          }
+            ///check if drive exists
+            if (System.IO.Directory.Exists(pszRootPath))
+            {
+                ///empty recycle bin of the specified Drive
+                ///no confirmation
+                _SHEmptyRecycleBin = SHEmptyRecycleBin(
+                IntPtr.Zero,
+                  pszRootPath,
+                SHERB_NOCONFIRMATION
+                );
+                ///getGetLastWin32Error 
+                int errorOfFunc = Convert.ToInt32(
+              System.Runtime.InteropServices.Marshal.GetLastWin32Error());
+
+                binClearStatus = (uint)errorOfFunc;
+
+            }
+            else
+            {
+                //binClearStatus = 1;
+                //_SHEmptyRecycleBin = 1;
+                System.Diagnostics.Debug.WriteLine(
+                   pszRootPath
+                   + "\n"
+                   + "Drive letter does not exit"
+                    + "\n"
+                   );
+            }
+
+            return _SHEmptyRecycleBin;
+        }
         #endregion
-
-        ///not Working on 7
-        ///Works on XP
-        #region SHQueryRecycleBin
-
-        /*
-         * SHQueryRecycleBin function
-         * [url]
-         * [http://msdn.microsoft.com/en-us/library/windows/desktop/bb762241(v=vs.85).aspx]
-         * 
-         * Retrieves the size of the Recycle Bin and the number of items in it, 
-         * for a specified drive.
-         * 
-         * HRESULT SHQueryRecycleBin(
-    _In_opt_  LPCTSTR pszRootPath,
-         * The address of a null-terminated string of maximum length MAX_PATH 
-         * to contain the path of the root drive on which the Recycle Bin is located.
-         * This parameter can contain the address of a string formatted with the drive, folder, and subfolder names (C:\Windows\System...).
-    _Inout_   LPSHQUERYRBINFO pSHQueryRBInfo
-         * The address of a SHQUERYRBINFO structure that receives 
-         * the Recycle Bin information. 
-         * The cbSize member of the structure must be set to the size of the structure 
-         * before calling this API.
-);
-         
-         * SHQUERYRBINFO structure
-         * [url]
-         * [http://msdn.microsoft.com/en-us/library/windows/desktop/bb759803(v=vs.85).aspx]
-         * 
-         * Contains the size and item count information retrieved by the 
-         * SHQueryRecycleBin function.
-         * 
-         * typedef struct {
-  DWORD   cbSize;
-         * The size of the structure, in bytes. 
-         * This member must be filled in prior to calling the function.
-  __int64 i64Size;
-         * The total size of all the objects in the specified Recycle Bin, in bytes. 
-  __int64 i64NumItems;
-         * The total number of items in the specified Recycle Bin.
-} SHQUERYRBINFO, *LPSHQUERYRBINFO;
-         */
-
-        ///SHQUERYRBINFO structure
-
-          [StructLayout(LayoutKind.Sequential, Pack = 4)]
-          public struct SHQUERYRBINFO
-          {
-              public int cbSize;
-              public long i64Size;
-              //total size of all the objects in the specified Recycle Bin, in bytes. 
-              public long i64NumItems;
-              //The total number of items in the specified Recycle Bin.
-          }
-
-
-          [DllImport("Shell32.dll", SetLastError = true, CharSet = CharSet.Auto)]
-          public static extern ulong SHQueryRecycleBin(
-               [param: MarshalAs(UnmanagedType.LPTStr)]
-                 [In] string pszRootPath,
-            ref SHQUERYRBINFO pSHQueryRBInfo
-              );
-
-
-          public ulong QueryRecycleBin(
-              out uint binQueryStatus,
-              out long binSize,
-              out long binTotalMembers,
-                string pszRootPath = @"C:\")
-          {
-              ///variable to asssign LastWin32Error
-              binQueryStatus = 999999;
-
-              ///variable to assign RecycleBin Size 
-              binSize = long.MinValue;
-
-              ///variable to assign total number of bin members
-              binTotalMembers = long.MinValue;
-
-              ///SHQueryRecycleBin function return value
-              ulong _SHQueryRecycleBin = ulong.MinValue;
-
-              ///filling in the SHQUERYRBINFO structure
-              SHQUERYRBINFO _SHQUERYRBINFO = new SHQUERYRBINFO();
-              _SHQUERYRBINFO.cbSize = Marshal.SizeOf(typeof(SHQUERYRBINFO));
-
-
-               ///check if drive exists
-              if (System.IO.Directory.Exists(pszRootPath))
-              {
-                  _SHQueryRecycleBin = SHQueryRecycleBin(
-                      pszRootPath,
-                      ref _SHQUERYRBINFO
-                      );
-
-                  ///getGetLastWin32Error 
-                  int errorOfFunc = Convert.ToInt32(
-                System.Runtime.InteropServices.Marshal.GetLastWin32Error());
-
-                  binQueryStatus = (uint)errorOfFunc;
-
-                  ///assign RecycleBin Size
-                  binSize = _SHQUERYRBINFO.i64Size;
-
-                  ///assign total number of bin members
-                  binTotalMembers = _SHQUERYRBINFO.i64NumItems;
-              }
-
-              else {
-                  System.Diagnostics.Debug.WriteLine(
-                      pszRootPath 
-                      + "\n" 
-                      +"Drive letter does not exit"
-                       + "\n" 
-                      );
-              }
-
-              return _SHQueryRecycleBin;
-          }
-
-
-
-        #endregion
-
 
     }
 }
