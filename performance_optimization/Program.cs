@@ -32,22 +32,22 @@ namespace performance_optimization
             performanceOptimization _perfOps =
                 new performanceOptimization();
 
-            int binQueryStatus;
-            long binSize;
-            long binTotalMembers;
+            //int binQueryStatus;
+            //long binSize;
+            //long binTotalMembers;
 
 
-            int returnValue = _perfOps.queryRecycleBin(
-                 out binQueryStatus,
-                 out binSize,
-                 out binTotalMembers,
-                 @"C:\"
-                 );
+            //int returnValue = _perfOps.queryRecycleBin(
+            //     out binQueryStatus,
+            //     out binSize,
+            //     out binTotalMembers,
+            //     @"C:\"
+            //     );
 
-            Console.WriteLine(binQueryStatus
-                + "\n" + binSize
-               + "\n" + binTotalMembers
-            + "\n" + returnValue);
+            //Console.WriteLine(binQueryStatus
+            //    + "\n" + binSize
+            //   + "\n" + binTotalMembers
+            //+ "\n" + returnValue);
 
 
             //uint binClearStatus;
@@ -55,8 +55,11 @@ namespace performance_optimization
             //ulong return_Value = 
             //    _perfOps.shellEmptyRecycleBin(out binClearStatus);
 
+            FSW_FileSystemWatcher _fsw = new FSW_FileSystemWatcher();
+            _fsw.beginWatching();
 
             Console.ReadLine();
+            _fsw.Dispose();
         }
     }
 }

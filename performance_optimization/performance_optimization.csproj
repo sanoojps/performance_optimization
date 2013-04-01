@@ -41,6 +41,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DirSize.cs" />
+    <Compile Include="FSW-FileSystemWatcher.cs" />
     <Compile Include="performanceOptimization.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
