@@ -7,19 +7,20 @@ using Microsoft.Win32;
 namespace performance_optimization
 {
     /// <summary>
-    /// 
+    /// registryOPs
     /// </summary>
     class registryOPs
     {
         /// <summary>
-        /// 
+        /// registryOPs
+        /// Constructor
         /// </summary>
         public registryOPs()
         {
         }
 
         /// <summary>
-        /// 
+        /// destructor
         /// </summary>
         ~registryOPs()
         { 

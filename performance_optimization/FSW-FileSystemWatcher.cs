@@ -4,12 +4,14 @@ using System.Text;
 
 namespace performance_optimization
 {
+    
     /// <summary>
     /// Class Organization
     /// Constructor - to initialize and set properties
-    /// Dispose function - to stop & dispose all objects
     /// Event handler function for all events to be monitored
-    /// start monitoring
+    /// begin Watcher - start monitoring
+    /// setNotifyFilters - properties to monitor
+    /// Dispose function - to stop & dispose all objects
     /// </summary>
     class FSW_FileSystemWatcher
     {
@@ -18,11 +20,17 @@ namespace performance_optimization
         System.IO.FileSystemWatcher _FSW =
                 new System.IO.FileSystemWatcher();
 
+        /// <summary>
+        /// FSW_FileSystemWatcher Class
+        /// </summary>
+
+        #region FSW_FileSystemWatcher
+
         public FSW_FileSystemWatcher()        
         {
             ///setting properties
 
-            setFilters();
+            setNotifyFilters();
 
             _FSW.Filter = "*.*";
 
@@ -32,7 +40,7 @@ namespace performance_optimization
 
             _FSW.Path = System.IO.Path.GetTempPath().ToString();
 
-            //Adding event Handlers
+            ///Adding event Handlers
 
             _FSW.Changed += _FSW_Changed;
 
@@ -42,23 +50,42 @@ namespace performance_optimization
 
             _FSW.Renamed += _FSW_Renamed;
 
-            _FSW.Error += _FSW_Error;
+            //_FSW.Error += _FSW_Error;
 
             //_FSW.Disposed += _FSW_Disposed;
 
-
         }
 
+    #endregion
+
+
+        #region EventHandlers
+
+        /// <summary>
+        /// _FSW_Disposed
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         //void _FSW_Disposed(object sender, EventArgs e)
         //{
         //    Dispose();
         //}
 
-        void _FSW_Error(object sender, System.IO.ErrorEventArgs e)
-        {
-            throw new NotImplementedException();
-        }
+        /// <summary>
+        /// _FSW_Error
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        //void _FSW_Error(object sender, System.IO.ErrorEventArgs e)
+        //{
+        //    throw new NotImplementedException();
+        //}
 
+        /// <summary>
+        /// _FSW_Renamed
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         void _FSW_Renamed(object sender, System.IO.RenamedEventArgs e)
         {
             Console.WriteLine("_FSW_Renamed"
@@ -70,6 +97,11 @@ namespace performance_optimization
                   );
         }
 
+        /// <summary>
+        /// _FSW_Deleted
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         void _FSW_Deleted(object sender, System.IO.FileSystemEventArgs e)
         {
            
@@ -81,6 +113,11 @@ namespace performance_optimization
 
         }
 
+        /// <summary>
+        /// _FSW_Created
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         void _FSW_Created(object sender, System.IO.FileSystemEventArgs e)
         {
             Console.WriteLine("_FSW_Created"
@@ -89,7 +126,11 @@ namespace performance_optimization
                 + "\n" + e.Name
                 );
         }
-
+        /// <summary>
+        /// _FSW_Changed
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         void _FSW_Changed(object sender, System.IO.FileSystemEventArgs e)
         {
             Console.WriteLine("_FSW_Changed"
@@ -109,7 +150,7 @@ namespace performance_optimization
             nu.WalkDirectoryTree(path);
 
              Console.WriteLine("Dir: " + System.IO.Path.GetTempPath() +
-             Environment.NewLine + "Size: " + nu.Number / (1000 * 1000) + " MB ");
+             Environment.NewLine + "Size: " + nu.Number / (1024 * 1024) + " MB ");
 
             long tempDirSize = nu.Number;
 
@@ -118,6 +159,13 @@ namespace performance_optimization
         }
 
 
+        #endregion
+
+
+        #region beginWatching
+        /// <summary>
+        /// beginWatching
+        /// </summary>
         public void beginWatching()
         {
             try
@@ -131,8 +179,22 @@ namespace performance_optimization
 
         }
 
+        #endregion
 
-        private void setFilters()
+
+        #region setNotifyFilters
+        /// <summary>
+        /// setFilters
+        /// System.IO.NotifyFilters.Attributes |
+        /// System.IO.NotifyFilters.CreationTime |
+        /// System.IO.NotifyFilters.DirectoryName |
+        /// System.IO.NotifyFilters.FileName |
+        /// System.IO.NotifyFilters.LastAccess |
+        /// System.IO.NotifyFilters.LastWrite |
+        /// System.IO.NotifyFilters.Security |
+        /// System.IO.NotifyFilters.Size
+        /// </summary>
+        private void setNotifyFilters()
         {
             try
             {
@@ -153,6 +215,14 @@ namespace performance_optimization
 
         }
 
+        #endregion
+
+
+        #region Dispose
+
+        /// <summary>
+        /// Dispose()
+        /// </summary>
         public void Dispose()
         {
             //stop monitoring
@@ -160,5 +230,10 @@ namespace performance_optimization
             //dispose the monitor object
             _FSW.Dispose();
         }
+
+        #endregion
+
     }
+
+   
 }

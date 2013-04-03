@@ -55,8 +55,42 @@ namespace performance_optimization
             //ulong return_Value = 
             //    _perfOps.shellEmptyRecycleBin(out binClearStatus);
 
+            //FSW_FileSystemWatcher _fsw = new FSW_FileSystemWatcher();
+
+           
+
+            //_fsw.beginWatching();
+
             FSW_FileSystemWatcher _fsw = new FSW_FileSystemWatcher();
-            _fsw.beginWatching();
+            System.Threading.Thread T = new Thread(_fsw.beginWatching);
+            T.Name = "_fsw.beginWatching";
+            Console.WriteLine("_fsw.beginWatching");
+            T.Start();
+
+            DirSize _dir = new DirSize();
+            System.IO.DirectoryInfo path =
+                new System.IO.DirectoryInfo(System.IO.Path.GetTempPath());
+
+            
+
+            _dir.WalkDirectoryTree(path);
+            Console.WriteLine(Math.Round(
+                (Convert.ToDouble(_dir.Number) / (1024 * 1024)),3
+                ) .ToString() + " MB " + "\n")
+                ;
+                
+                
+
+                _dir.recurseDeleteADir(path);
+
+                _dir.Number = uint.MinValue;
+                
+            _dir.WalkDirectoryTree(path);
+
+            Console.WriteLine(Math.Round(
+                (Convert.ToDouble(_dir.Number) / (1024 * 1024)), 3
+                ).ToString() + " MB " + "\n")
+                ;
 
             Console.ReadLine();
             _fsw.Dispose();

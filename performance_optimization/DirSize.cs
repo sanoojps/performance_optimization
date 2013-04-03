@@ -4,11 +4,15 @@ using System.Text;
 
 using System.IO;
 
+
 namespace performance_optimization
 {
+    /// <summary>
+    /// DirSize
+    /// </summary>
     class DirSize
     {
-        long _number;
+        long _number = uint.MinValue;
         public long Number
         {
             get
@@ -25,7 +29,27 @@ namespace performance_optimization
         {
         }
 
-        //from http://msdn.microsoft.com/en-us/library/bb513869.aspx
+        #region WalkDirectoryTreeReturnSize
+        ///[url] 
+        ///[http://msdn.microsoft.com/en-us/library/bb513869.aspx]
+
+        /// <summary>
+        /// WalkDirectoryTree
+        /// <remarks
+        /// sets _number = size of directory
+        /// </remarks>
+        /// <remarks>
+        /// SampleUsage
+        /// DirSize _dir = new DirSize();
+        /// System.IO.DirectoryInfo path =
+        /// new System.IO.DirectoryInfo(System.IO.Path.GetTempPath());
+        /// _dir.WalkDirectoryTree(path);
+        /// Console.WriteLine(Math.Round(
+        /// (Convert.ToDouble(_dir.Number) / (1024 * 1024)),3) .ToString() 
+        /// + " MB " + "\n")
+        /// </remarks>
+        /// </summary>
+        /// <param name="root"></param>
         public void WalkDirectoryTree(System.IO.DirectoryInfo root)
         {
             long b = 0;
@@ -87,7 +111,15 @@ namespace performance_optimization
 
         }
 
+        #endregion
 
+        #region SystemDriveFreeSpace
+        /// <summary>
+        /// SystemDriveFreeSpace
+        /// </summary>
+        /// <returns>
+        /// Math.Round(percentFreeSpace, 3)
+        /// </returns>
         public decimal SystemDriveFreeSpace()
         {
             DriveInfo d = new DriveInfo(Path.GetPathRoot(
@@ -100,19 +132,67 @@ namespace performance_optimization
 
             decimal percentFreeSpace = (totalFreeSpace / totalSize) * 100;
 
-
             return Math.Round(percentFreeSpace, 3);
+        }
+        #endregion
 
+        #region recurseDeleteADir
+        /// <summary>
+        /// recurseDeleteADir
+        /// will not delete the parent Dir
+        /// </summary>
+        /// <param name="directory"></param>
+        /// <remarks>
+        /// SampleUsage
+        /// DirSize _dir = new DirSize();
+        /// System.IO.DirectoryInfo path =
+        /// new System.IO.DirectoryInfo(System.IO.Path.GetTempPath());
+        /// _dir.recurseDeleteADir(path);
+        /// </remarks>
+        public void recurseDeleteADir(System.IO.DirectoryInfo directory)
+        {
+            foreach (System.IO.FileInfo file in directory.GetFiles())
+            {
+                try
+                {
+                    file.Delete();
+                }
+                    ///file in use
+                catch (System.IO.IOException)
+                {
+                    System.Diagnostics.Debug.WriteLine(file.FullName + "\n");
+                    
+                }
+                    ///no rights to access the file
+                catch (System.UnauthorizedAccessException)
+                {
+                    System.Diagnostics.Debug.WriteLine(file.FullName + "\n");
+                }
+            }
+            foreach (System.IO.DirectoryInfo subDirectory in directory.GetDirectories())
+            {
+                try
+                {
+                    subDirectory.Delete(true);
+                }
 
+                catch(System.UnauthorizedAccessException)
+                {
+                    ///no rights to access the file
+                    System.Diagnostics.Debug.WriteLine(subDirectory.FullName + "\n");
+                }
+            }
         }
 
+        //public void recurseDeleteADir()
+        //{
+        //    System.IO.DirectoryInfo directory = new System.IO.DirectoryInfo(
+        //        @"C:\Users\fRiv0l\AppData\Local\Temp");
 
-       
+        //    directory.Empty();
+        //}
 
-
-
-
-
+        #endregion
 
 
     }
